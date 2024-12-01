@@ -13,7 +13,7 @@
         android:theme="@style/Theme.Kurs"
         tools:targetApi="31">
         <activity
-            android:name=".Game"
+            android:name=".game.Game"
             android:exported="false"
             android:label="@string/title_activity_game"
             android:theme="@style/Theme.Kurs" />

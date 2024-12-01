@@ -1,13 +1,12 @@
 package com.report.kurs
 
-import android.content.Intent
 import android.graphics.Color.rgb
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -20,19 +19,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.report.kurs.ui.theme.KursTheme
+import kotlinx.serialization.Serializable
+
+@Serializable
+object HomeData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Home(navController: NavHostController) {
-    val context = LocalContext.current
+fun Home( onGameClicked: () -> Unit, onHistoryClicked: () -> Unit, onSettingClicked: () -> Unit ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
@@ -61,27 +60,24 @@ fun Home(navController: NavHostController) {
         ) {
             Column(Modifier.align(Alignment.Center)) {
                 Button(
-                    colors = ButtonColors(
-                        containerColor = Color(rgb(0, 73, 83)),
-                        contentColor = Color.White,
-                        disabledContainerColor = Color.LightGray,
-                        disabledContentColor = Color.DarkGray
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(rgb(0, 73, 83))
                     ),
-                    onClick = {
-                        val intent = Intent(context, Game::class.java)
-                        context.startActivity(intent)
-                    },
+                    onClick = { onGameClicked() },
                     modifier = Modifier
                         .padding(20.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
-                    Text(text = "Играть", fontSize = 18.sp, modifier = Modifier.padding( horizontal = 10.dp, vertical = 5.dp))
+                    Text(
+                        text = "Играть",
+                        fontSize = 18.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding( horizontal = 10.dp, vertical = 5.dp)
+                    )
                 }
 
                 FilledTonalButton(
-                    onClick = {
-                        navController.navigate(Route.History.route)
-                    },
+                    onClick = { onHistoryClicked() },
                     modifier = Modifier
                         .padding(10.dp)
                         .align(Alignment.CenterHorizontally)
@@ -90,9 +86,7 @@ fun Home(navController: NavHostController) {
                 }
 
                 FilledTonalButton(
-                    onClick = {
-                        navController.navigate(Route.Setting.route)
-                    },
+                    onClick = { onSettingClicked() },
                     modifier = Modifier
                         .padding(10.dp)
                         .align(Alignment.CenterHorizontally)
@@ -108,6 +102,6 @@ fun Home(navController: NavHostController) {
 @Composable
 fun HomePreview() {
     KursTheme {
-        Home(rememberNavController())
+        Home({}, {}, {})
     }
 }

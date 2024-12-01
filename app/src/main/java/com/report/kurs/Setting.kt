@@ -21,12 +21,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.report.kurs.ui.theme.KursTheme
+import kotlinx.serialization.Serializable
+
+@Serializable
+object SettingData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Setting(navController: NavHostController) {
+fun Setting( onBackClicked: () -> Unit ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
@@ -45,10 +48,10 @@ fun Setting(navController: NavHostController) {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { onBackClicked() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Localized description"
+                            contentDescription = "Вернуться назад"
                         )
                     }
                 },
@@ -72,6 +75,6 @@ fun Setting(navController: NavHostController) {
 @Composable
 fun SettingPreview() {
     KursTheme {
-        Setting(rememberNavController())
+        Setting{}
     }
 }
