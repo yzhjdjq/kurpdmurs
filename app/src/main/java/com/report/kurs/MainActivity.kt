@@ -12,6 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.report.kurs.game.Game
+import com.report.kurs.settings.SettingsPage
+import com.report.kurs.settings.SettingData
 import com.report.kurs.ui.theme.KursTheme
 
 class MainActivity : ComponentActivity() {
@@ -52,7 +54,7 @@ fun MainScreen() {
             }
         }
         composable<SettingData> {
-            Setting{
+            SettingsPage{
                 navController.popBackStack()
             }
         }

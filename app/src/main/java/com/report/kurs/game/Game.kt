@@ -1,7 +1,10 @@
 package com.report.kurs.game
 
+import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.graphics.Color.rgb
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -35,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -91,8 +95,11 @@ fun GamePage() {
     val totalMines = 5
     var grid by remember { mutableStateOf(createMinefield(gridDimension, totalMines)) }
     var firstMove by remember { mutableStateOf(true) }
-    var statusMessage by remember { mutableStateOf("Begin the game!") }
+    var statusMessage by remember { mutableStateOf("Начни играть!") }
     var flaggingMode by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val pref = context.getSharedPreferences("MineSweeperSettings", MODE_PRIVATE)
+    Log.d( "MyLog", pref.getInt("sizeOfArena", 0).toString() )
 
     Column(
         modifier = Modifier
