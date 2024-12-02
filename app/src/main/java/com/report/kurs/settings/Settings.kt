@@ -19,7 +19,7 @@ object Settings {
         SetPreferences(context, SettingsPreferences.SizeOfArenaRowName, size)
     }
 
-    fun GetCountOfMines(context: Context, defaultCount: Int): Int {
+    fun GetCountOfMines(context: Context, defaultCount: Int = 6): Int {
         return GetPreferences(context, SettingsPreferences.CountOfMinesRowName, defaultCount)
     }
 

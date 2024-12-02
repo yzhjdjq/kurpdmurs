@@ -110,10 +110,10 @@ fun SettingsPage(onBackClicked: () -> Unit) {
                 SettingSlider(
                     name = "Количество мин на игровом поле",
                     description = "Укажите количество мин на игровом поле. Чем больше поле и чем меньше мин на нем, тем проще играть.",
-                    currentValue = sizeSettingValue,
+                    currentValue = countSettingValue,
                     onValueChange = {
-                        sizeSettingValue.value = it
-                        Settings.SetSizeOfArena(context, sizeSettingValue.value.toInt())
+                        countSettingValue.value = it
+                        Settings.SetCountOfMines(context, countSettingValue.value.toInt())
                     },
                     modifier = Modifier
                 )
