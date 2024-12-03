@@ -1,13 +1,17 @@
 package com.report.kurs.game
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.Color.rgb
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,12 +41,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import androidx.room.Room
 import com.report.kurs.database.Database
 import com.report.kurs.database.DatabaseName
@@ -54,6 +63,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Date
 import java.util.Locale
+import kotlin.math.absoluteValue
 
 class Game : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -107,6 +117,23 @@ class Game : ComponentActivity() {
 fun GamePage() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    var scale by remember { mutableStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset(0f, 0f)) }
+    var sceneSize = Size(0f, 0f)
+    var state = rememberTransformableState { zoomChange, panChange, rotationChange ->
+        if ((scale > 0.25 && zoomChange < 1) || (scale < 1.75 && zoomChange > 1))
+            scale *= zoomChange
+        if (0.95 < scale && scale < 1.05)
+            offset = Offset(0f, 0f)
+        else {
+            val maxVOffset = sceneSize.height.absoluteValue / 2
+            val maxHOffset = sceneSize.width.absoluteValue / 2
+            if ((offset.x > -maxHOffset && panChange.x < 0) || (offset.x < maxHOffset && panChange.x > 0))
+                offset += Offset(panChange.x, 0f)
+            if ((offset.y > (-maxVOffset*0.9) && panChange.y < 0) || (offset.y < maxVOffset && panChange.y > 0))
+                offset += Offset(0f, panChange.y)
+        }
+    }
 
     val gridDimension = Settings.GetSizeOfArena(context, 6)
     val totalMines = Settings.GetCountOfMines(context, 6)
@@ -117,7 +144,17 @@ fun GamePage() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(Color.White)
+            .transformable(state)
+            .graphicsLayer(
+                translationX = offset.x,
+                translationY = offset.y,
+                scaleX = scale,
+                scaleY = scale
+            )
+            .onSizeChanged { size ->
+                sceneSize = size.toSize()
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
