@@ -9,24 +9,24 @@ data class Title(
     val isFlagged: Boolean = false
 )
 
-fun createMinefield( size: Int, mineCount: Int ): List<List<Title>> {
+fun СreateMinefield(size: Int, mineCount: Int): List<List<Title>> {
     val grid = MutableList(size) { MutableList(size) { Title() } }
     var minesCount = 0
 
     while (minesCount < mineCount) {
-        val row = Random.nextInt( size )
-        val col = Random.nextInt( size )
-        if( !grid[row][col].isMine ) {
-            grid[row][col] = grid[row][col].copy( isMine = true )
+        val row = Random.nextInt(size)
+        val col = Random.nextInt(size)
+        if (!grid[row][col].isMine) {
+            grid[row][col] = grid[row][col].copy(isMine = true)
             minesCount++
         }
     }
 
-    for( row in 0 until size ){
-        for( col in 0 until size ) {
-            if( !grid[row][col].isMine) {
-                val neighboringMines = countAdjacentMines( grid, row, col)
-                grid[row][col] = grid[row][col].copy( neighboringMines = neighboringMines )
+    for (row in 0 until size) {
+        for (col in 0 until size) {
+            if (!grid[row][col].isMine) {
+                val neighboringMines = countAdjacentMines(grid, row, col)
+                grid[row][col] = grid[row][col].copy(neighboringMines = neighboringMines)
             }
         }
     }

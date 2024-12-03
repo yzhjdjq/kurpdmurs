@@ -110,11 +110,10 @@ fun GamePage() {
 
     val gridDimension = Settings.GetSizeOfArena(context, 6)
     val totalMines = Settings.GetCountOfMines(context, 6)
-    var grid by remember { mutableStateOf(createMinefield(gridDimension, totalMines)) }
+    var grid by remember { mutableStateOf(СreateMinefield(gridDimension, totalMines)) }
     var firstMove by remember { mutableStateOf(true) }
     var statusMessage by remember { mutableStateOf("Начни играть!") }
     var flaggingMode by remember { mutableStateOf(Settings.GetFlaggingMode(context, false)) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -139,55 +138,49 @@ fun GamePage() {
         }
 
         MineSweeperViewModel(grid) { x, y ->
-            if (flaggingMode) {
+            if (statusMessage != "Так держать!")
+                statusMessage = "Так держать!"
+
+            if (flaggingMode && !grid[x][y].isRevealed) {
                 grid = grid.mapIndexed { rowIndex, rowList ->
                     rowList.mapIndexed { colIndex, tile ->
-                        if (rowIndex == x && colIndex == y) {
+                        if (rowIndex == x && colIndex == y)
                             tile.copy(isFlagged = !tile.isFlagged)
-                        } else {
+                        else
                             tile
-                        }
                     }
                 }
             } else {
-                if (firstMove) {
-                    if (grid[x][y].isMine) {
-                        statusMessage = "О нет, ты попал на мину!"
-                        grid = exposeAllMines(grid)
-                        coroutineScope.launch {
-                            SaveResultGame(context, "Проиграл", gridDimension, totalMines)
-                        }
-                    } else {
-                        grid = handleFirstMove(grid, x, y)
-                        firstMove = false
-                        statusMessage = "Так держать!"
+//                Раскомментировать, чтобы добавить индивидуальное поведение по открытию ячеек при первом нажатии
+//                if (firstMove) {
+//                    if (grid[x][y].isMine) {
+//                        statusMessage = "О нет, ты попал на мину!"
+//                        ExposeAllMines(grid)
+//                        coroutineScope.launch {
+//                            SaveResultGame(context, "Проиграл", gridDimension, totalMines)
+//                        }
+//                    } else {
+//                        UncoverCells(grid, x, y)
+//                        firstMove = false
+//                        statusMessage = "Так держать!"
+//                    }
+//                } else {
+                if (grid[x][y].isMine) {
+                    statusMessage = "О нет, ты попал на мину!"
+                    grid = ExposeAllMines(grid)
+                    coroutineScope.launch {
+                        SaveResultGame(context, "Проиграл", gridDimension, totalMines)
                     }
                 } else {
-                    if (grid[x][y].isMine) {
-                        statusMessage = "О нет, ты попал на мину!"
-                        grid = exposeAllMines(grid)
-                        coroutineScope.launch {
-                            SaveResultGame(context, "Проиграл", gridDimension, totalMines)
+                    grid = UncoverCells(grid, x, y)
+                    var winFlag = true
+                    for (row in grid)
+                        if (row.contains(Title(isRevealed = false))) {
+                            winFlag = false
+                            break
                         }
-                    } else {
-                        grid = grid.mapIndexed { rowIndex, rowList ->
-                            rowList.mapIndexed { colIndex, tile ->
-                                if (rowIndex == x && colIndex == y) {
-                                    tile.copy(isRevealed = true)
-                                } else {
-                                    tile
-                                }
-                            }
-                        }
-                        var winFlag = true
-                        for( row in grid )
-                            if( row.contains(Title(isRevealed = false))) {
-                                winFlag = false
-                                break
-                            }
-                        if( winFlag )
-                            statusMessage = "Поздравляю, вы победили!"
-                    }
+                    if (winFlag)
+                        statusMessage = "Поздравляю, вы победили!"
                 }
             }
         }
@@ -206,7 +199,7 @@ fun GamePage() {
                 coroutineScope.launch {
                     SaveResultGame(context, "Не закончена", gridDimension, totalMines)
                 }
-                grid = createMinefield(gridDimension, totalMines)
+                grid = СreateMinefield(gridDimension, totalMines)
                 firstMove = true
                 statusMessage = "Начни играть!"
             },
