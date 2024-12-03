@@ -31,7 +31,7 @@ object HomeData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Home( onGameClicked: () -> Unit, onHistoryClicked: () -> Unit, onSettingClicked: () -> Unit ) {
+fun Home(onGameClicked: () -> Unit, onHistoryClicked: () -> Unit, onSettingClicked: () -> Unit) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
@@ -72,7 +72,7 @@ fun Home( onGameClicked: () -> Unit, onHistoryClicked: () -> Unit, onSettingClic
                         text = "Играть",
                         fontSize = 18.sp,
                         color = Color.White,
-                        modifier = Modifier.padding( horizontal = 10.dp, vertical = 5.dp)
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                     )
                 }
 

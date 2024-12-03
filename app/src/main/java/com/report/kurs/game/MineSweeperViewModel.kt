@@ -6,64 +6,117 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.LocalRippleTheme
+import androidx.compose.material.ripple.RippleAlpha
+import androidx.compose.material.ripple.RippleTheme
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.report.kurs.R
 
 @Composable
-fun MineSweeperViewModel( grid: List<List<Title>>, onTitleClick: (Int, Int) -> Unit ) {
+fun MineSweeperViewModel(grid: List<List<Title>>, onTitleClick: (Int, Int) -> Unit) {
     Column {
-        for( rowIndex in grid.indices ) {
+        for (rowIndex in grid.indices) {
             Row {
-               for( colIndex in grid[rowIndex].indices ) {
-                   MineFieldCell (
-                       title = grid[rowIndex][colIndex],
-                       onClick = { onTitleClick( rowIndex, colIndex ) }
-                   )
-               }
+                for (colIndex in grid[rowIndex].indices) {
+                    MineFieldCell(
+                        title = grid[rowIndex][colIndex],
+                        onClick = { onTitleClick(rowIndex, colIndex) }
+                    )
+                    Spacer( Modifier.padding(1.dp))
+                }
             }
+            Spacer( Modifier.padding(1.dp))
         }
     }
 }
 
 @Composable
-fun MineFieldCell( title: Title, onClick: () -> Unit ) {
+fun MineFieldCell(title: Title, onClick: () -> Unit) {
     val backgroundColor = when {
         title.isRevealed && title.isMine -> Color.Red
-        title.isRevealed && title.neighboringMines == 0 -> Color.LightGray
-        else -> Color.DarkGray
+        title.isRevealed && !title.isFlagged -> Color.Gray
+        else -> Color.Transparent
     }
     Box(
-       modifier = Modifier
-           .size(40.dp)
-           .clickable(onClick = onClick)
-           .background(backgroundColor),
+        modifier = Modifier
+            .size(40.dp)
+            .clickable(onClick = onClick)
+            .background(backgroundColor),
         contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource( id = R.drawable.mine_item ),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize()
-        )
+        if (!title.isRevealed || title.isFlagged)
+            GreyButton(onClick = { onClick() }, title.isFlagged )
 
-        if( title.isRevealed ) {
-            if( title.isMine )
-                Text( text = "X", color = Color.White, fontSize = 24.sp )
-            else if( title.neighboringMines == 0 )
-                Text( text = "Save", color = Color.White, fontSize = 18.sp )
-            else
-                Text( text =  "${title.neighboringMines}", color = Color.White, fontSize = 18.sp )
+        if (title.isRevealed) {
+            if (title.isMine)
+                Text(text = "X", color = Color.White, fontSize = 24.sp)
+            else if (title.neighboringMines != 0)
+                Text(text = "${title.neighboringMines}", color = Color.White, fontSize = 18.sp)
         }
-
-        if( title.isFlagged )
-            Text( text = "F", color = Color.Yellow, fontSize = 24.sp )
     }
+}
+
+@Composable
+fun GreyButton(onClick: () -> Unit, isFlagged: Boolean = false) {
+    CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
+        Button(
+            onClick = { onClick() },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent
+            ),
+            shape = RoundedCornerShape(4.dp),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 3.dp,
+                pressedElevation = 6.dp
+            ),
+            modifier = Modifier
+                .size(60.dp)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.LightGray,
+                            Color.Gray
+                        )
+                    )
+                )
+                .graphicsLayer(
+                    translationX = 1f,
+                    translationY = -9f
+                )
+                .padding(3.dp),
+            contentPadding = ButtonDefaults.TextButtonContentPadding
+        ) {
+            if(isFlagged)
+                Image(
+                    painter = painterResource( id = R.drawable.flag ),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
+                )
+        }
+    }
+}
+
+private object NoRippleTheme : RippleTheme {
+    @Composable
+    override fun defaultColor() = Color.Unspecified
+
+    @Composable
+    override fun rippleAlpha(): RippleAlpha = RippleAlpha(0.0f, 0.0f, 0.0f, 0.0f)
 }
