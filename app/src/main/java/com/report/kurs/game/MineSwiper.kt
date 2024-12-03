@@ -1,6 +1,40 @@
 package com.report.kurs.game
 
-fun countAdjacentMines(grid: List<List<Title>>, x: Int, y: Int): Int {
+import kotlin.random.Random
+
+data class Title(
+    val isMine: Boolean = false,
+    val neighboringMines: Int = 0,
+    val isRevealed: Boolean = false,
+    val isFlagged: Boolean = false
+)
+
+fun СreateMinefield(size: Int, mineCount: Int): List<List<Title>> {
+    val grid = MutableList(size) { MutableList(size) { Title() } }
+    var minesCount = 0
+
+    while (minesCount < mineCount) {
+        val row = Random.nextInt(size)
+        val col = Random.nextInt(size)
+        if (!grid[row][col].isMine) {
+            grid[row][col] = grid[row][col].copy(isMine = true)
+            minesCount++
+        }
+    }
+
+    for (row in 0 until size) {
+        for (col in 0 until size) {
+            if (!grid[row][col].isMine) {
+                val neighboringMines = CountAdjacentMines(grid, row, col)
+                grid[row][col] = grid[row][col].copy(neighboringMines = neighboringMines)
+            }
+        }
+    }
+
+    return grid
+}
+
+fun CountAdjacentMines(grid: List<List<Title>>, x: Int, y: Int): Int {
     val directions = listOf(
         -1 to -1, -1 to 0, -1 to 1,
         0 to -1, 0 to 1,
@@ -67,7 +101,7 @@ fun RecursiveUncoverEmptyCells(grid: MutableList<MutableList<Title>>, x: Int, y:
     for ((dx, dy) in directions) {
         val newX = x + dx
         val newY = y + dy
-        if (newX in grid.indices && newY in grid[newX].indices && !grid[newX][newY].isMine && !grid[newX][newY].isRevealed) {
+        if (newX in grid.indices && newY in grid[newX].indices && !grid[newX][newY].isMine && !grid[newX][newY].isRevealed && !grid[newX][newY].isFlagged) {
             grid[newX][newY] = grid[newX][newY].copy(isRevealed = true)
             if (grid[newX][newY].neighboringMines == 0)
                 RecursiveUncoverEmptyCells(grid, newX, newY)
