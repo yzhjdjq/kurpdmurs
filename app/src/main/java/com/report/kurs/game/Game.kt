@@ -1,11 +1,9 @@
 package com.report.kurs.game
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.Color.rgb
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -130,7 +128,7 @@ fun GamePage() {
             val maxHOffset = sceneSize.width.absoluteValue / 2
             if ((offset.x > -maxHOffset && panChange.x < 0) || (offset.x < maxHOffset && panChange.x > 0))
                 offset += Offset(panChange.x, 0f)
-            if ((offset.y > (-maxVOffset*0.9) && panChange.y < 0) || (offset.y < maxVOffset && panChange.y > 0))
+            if ((offset.y > (-maxVOffset * 0.9) && panChange.y < 0) || (offset.y < maxVOffset && panChange.y > 0))
                 offset += Offset(0f, panChange.y)
         }
     }
@@ -202,22 +200,22 @@ fun GamePage() {
 //                        statusMessage = "Так держать!"
 //                    }
 //                } else {
-                if (grid[x][y].isMine) {
+                if (grid[x][y].isMine && !grid[x][y].isFlagged) {
                     statusMessage = "О нет, ты попал на мину!"
                     grid = ExposeAllMines(grid)
                     coroutineScope.launch {
                         SaveResultGame(context, "Проиграл", gridDimension, totalMines)
                     }
                 } else {
-                    grid = UncoverCells(grid, x, y)
-                    var winFlag = true
-                    for (row in grid)
-                        if (row.contains(Title(isRevealed = false))) {
-                            winFlag = false
-                            break
+                    if (!grid[x][y].isFlagged) {
+                        grid = UncoverCells(grid, x, y)
+                        if (CheckWin(grid, gridDimension, totalMines)) {
+                            statusMessage = "Поздравляю, вы победили!"
+                            coroutineScope.launch {
+                                SaveResultGame(context, "Победа", gridDimension, totalMines)
+                            }
                         }
-                    if (winFlag)
-                        statusMessage = "Поздравляю, вы победили!"
+                    }
                 }
             }
         }

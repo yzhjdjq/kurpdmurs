@@ -108,3 +108,22 @@ fun RecursiveUncoverEmptyCells(grid: MutableList<MutableList<Title>>, x: Int, y:
         }
     }
 }
+
+fun CheckWin(grid: List<List<Title>>, sizeOfArena: Int, countOfMines: Int): Boolean {
+    var winFlag = true
+    var countFlaggedCells = 0
+    var countRevealedCells = 0
+
+    for (row in grid)
+        for( title in row){
+            if (title.isFlagged && title.isMine && !title.isRevealed)
+                countFlaggedCells++
+            if (title.isRevealed && !title.isMine && !title.isFlagged)
+                countRevealedCells++
+        }
+    if (countFlaggedCells == countOfMines)
+        return true
+    if (countRevealedCells == (sizeOfArena*sizeOfArena-countOfMines))
+        return true
+    return false
+}
