@@ -8,8 +8,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ButtonDefaults
@@ -43,6 +47,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -115,6 +120,7 @@ class Game : ComponentActivity() {
 fun GamePage() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+
     var scale by remember { mutableStateOf(1f) }
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
     var sceneSize = Size(0f, 0f)
@@ -133,12 +139,13 @@ fun GamePage() {
         }
     }
 
-    val gridDimension = Settings.GetSizeOfArena(context, 6)
-    val totalMines = Settings.GetCountOfMines(context, 6)
-    var grid by remember { mutableStateOf(СreateMinefield(gridDimension, totalMines)) }
+    val sizeOfArena = Settings.GetSizeOfArena(context, 6)
+    val countOfMines = Settings.GetCountOfMines(context, 6)
+    var grid by remember { mutableStateOf(СreateMinefield(sizeOfArena, countOfMines)) }
     var firstMove by remember { mutableStateOf(true) }
     var statusMessage by remember { mutableStateOf("Начни играть!") }
     var flaggingMode by remember { mutableStateOf(Settings.GetFlaggingMode(context, false)) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -152,9 +159,11 @@ fun GamePage() {
             )
             .onSizeChanged { size ->
                 sceneSize = size.toSize()
-            },
+            }
+            .horizontalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.Top,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -204,15 +213,15 @@ fun GamePage() {
                     statusMessage = "О нет, ты попал на мину!"
                     grid = ExposeAllMines(grid)
                     coroutineScope.launch {
-                        SaveResultGame(context, "Проиграл", gridDimension, totalMines)
+                        SaveResultGame(context, "Проиграл", sizeOfArena, countOfMines)
                     }
                 } else {
                     if (!grid[x][y].isFlagged) {
                         grid = UncoverCells(grid, x, y)
-                        if (CheckWin(grid, gridDimension, totalMines)) {
+                        if (CheckWin(grid, sizeOfArena, countOfMines)) {
                             statusMessage = "Поздравляю, вы победили!"
                             coroutineScope.launch {
-                                SaveResultGame(context, "Победа", gridDimension, totalMines)
+                                SaveResultGame(context, "Победа", sizeOfArena, countOfMines)
                             }
                         }
                     }
@@ -232,9 +241,9 @@ fun GamePage() {
         OutlinedButton(
             onClick = {
                 coroutineScope.launch {
-                    SaveResultGame(context, "Не закончена", gridDimension, totalMines)
+                    SaveResultGame(context, "Не закончена", sizeOfArena, countOfMines)
                 }
-                grid = СreateMinefield(gridDimension, totalMines)
+                grid = СreateMinefield(sizeOfArena, countOfMines)
                 firstMove = true
                 statusMessage = "Начни играть!"
             },
