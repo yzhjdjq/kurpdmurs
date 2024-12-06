@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color.rgb
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -36,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,11 +52,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.core.view.ViewCompat
 import androidx.room.Room
 import com.report.kurs.database.Database
 import com.report.kurs.database.DatabaseName
@@ -124,18 +128,26 @@ fun GamePage() {
     var scale by remember { mutableStateOf(1f) }
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
     var sceneSize = Size(0f, 0f)
+    VolumeButtonsHandler(
+        onVolumeDown = {
+            scale = (scale * 0.95f).coerceIn(1f, 4f)
+            if (scale == 1f)
+                offset = Offset(0f, 0f)
+        },
+        onVolumeUp = { scale = (scale * 1.05f).coerceIn(1f, 4f) }
+    )
     var state = rememberTransformableState { zoomChange, panChange, rotationChange ->
-        if ((scale > 0.25 && zoomChange < 1) || (scale < 1.75 && zoomChange > 1))
-            scale *= zoomChange
-        if (0.95 < scale && scale < 1.05)
+//        if ((scale > 0.25 && zoomChange < 1) || (scale < 1.75 && zoomChange > 1))
+//            scale *= zoomChange
+        if (1 <= scale && scale <= 1.04)
             offset = Offset(0f, 0f)
         else {
-            val maxVOffset = sceneSize.height.absoluteValue / 2
-            val maxHOffset = sceneSize.width.absoluteValue / 2
+            val maxVOffset = sceneSize.height.absoluteValue * scale / 2
+            val maxHOffset = sceneSize.width.absoluteValue * scale / 2
             if ((offset.x > -maxHOffset && panChange.x < 0) || (offset.x < maxHOffset && panChange.x > 0))
-                offset += Offset(panChange.x, 0f)
-            if ((offset.y > (-maxVOffset * 0.9) && panChange.y < 0) || (offset.y < maxVOffset && panChange.y > 0))
-                offset += Offset(0f, panChange.y)
+                offset += Offset(panChange.x * scale, 0f)
+            if ((offset.y > (-maxVOffset * 0.5) && panChange.y < 0) || (offset.y < maxVOffset && panChange.y > 0))
+                offset += Offset(0f, panChange.y * scale)
         }
     }
 
@@ -159,9 +171,7 @@ fun GamePage() {
             )
             .onSizeChanged { size ->
                 sceneSize = size.toSize()
-            }
-            .horizontalScroll(rememberScrollState())
-            .verticalScroll(rememberScrollState()),
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top,
     ) {
@@ -252,6 +262,39 @@ fun GamePage() {
             )
         ) {
             Text(text = "Начать заново", color = Color.Black)
+        }
+    }
+}
+
+@Composable
+fun VolumeButtonsHandler(
+    onVolumeUp: () -> Unit,
+    onVolumeDown: () -> Unit
+) {
+    val context = LocalContext.current
+    val view = LocalView.current
+
+    DisposableEffect(context) {
+        val keyEventDispatcher = ViewCompat.OnUnhandledKeyEventListenerCompat { _, event ->
+            when (event.keyCode) {
+                KeyEvent.KEYCODE_VOLUME_UP -> {
+                    onVolumeUp()
+                    true
+                }
+
+                KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                    onVolumeDown()
+                    true
+                }
+
+                else -> {
+                    false
+                }
+            }
+        }
+        ViewCompat.addOnUnhandledKeyEventListener(view, keyEventDispatcher)
+        onDispose {
+            ViewCompat.removeOnUnhandledKeyEventListener(view, keyEventDispatcher)
         }
     }
 }
