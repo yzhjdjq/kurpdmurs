@@ -3,9 +3,6 @@ package com.report.kurs.game
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +18,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -37,7 +33,7 @@ import kotlin.math.roundToInt
 @Composable
 fun MineSweeperViewModel(grid: List<List<Title>>, onTitleClick: (Int, Int) -> Unit) {
     val screenWidth = LocalConfiguration.current.screenWidthDp
-    val cellSize = screenWidth / (grid.size + grid.size*0.3).roundToInt()
+    val cellSize = screenWidth / (grid.size + grid.size * 0.3).roundToInt()
 
     Column {
         for (rowIndex in grid.indices) {
@@ -83,13 +79,18 @@ fun MineFieldCell(title: Title, size: Int = 40, onClick: () -> Unit) {
 
         if (title.isRevealed) {
             if (title.isMine)
-                Text(text = "X", color = Color.White, fontSize = (size * 0.6).sp)
+                Text(
+                    text = "X",
+                    lineHeight = (size * 0.6).sp,
+                    color = Color.White,
+                    fontSize = (size * 0.6).sp
+                )
             else if (title.neighboringMines != 0)
                 Text(
                     text = "${title.neighboringMines}",
+                    lineHeight = (size * 0.45).sp,
                     color = Color.White,
-                    fontSize = (size * 0.45).sp,
-                    modifier = Modifier.padding(0.dp)
+                    fontSize = (size * 0.45).sp
                 )
         }
     }
