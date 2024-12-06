@@ -9,10 +9,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,8 +19,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ButtonDefaults
@@ -49,7 +45,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -155,6 +150,8 @@ fun GamePage() {
     val countOfMines = Settings.GetCountOfMines(context, 6)
     var grid by remember { mutableStateOf(СreateMinefield(sizeOfArena, countOfMines)) }
     var firstMove by remember { mutableStateOf(true) }
+    var winFlag by remember { mutableStateOf(false) }
+    var loseFlag by remember { mutableStateOf(false) }
     var statusMessage by remember { mutableStateOf("Начни играть!") }
     var flaggingMode by remember { mutableStateOf(Settings.GetFlaggingMode(context, false)) }
 
@@ -192,19 +189,27 @@ fun GamePage() {
         }
 
         MineSweeperViewModel(grid) { x, y ->
-            if (statusMessage != "Так держать!")
-                statusMessage = "Так держать!"
+            if (winFlag != true && loseFlag != true) {
+                if (statusMessage != "Так держать!")
+                    statusMessage = "Так держать!"
 
-            if (flaggingMode && !grid[x][y].isRevealed) {
-                grid = grid.mapIndexed { rowIndex, rowList ->
-                    rowList.mapIndexed { colIndex, tile ->
-                        if (rowIndex == x && colIndex == y)
-                            tile.copy(isFlagged = !tile.isFlagged)
-                        else
-                            tile
+                if (flaggingMode && !grid[x][y].isRevealed) {
+                    grid = grid.mapIndexed { rowIndex, rowList ->
+                        rowList.mapIndexed { colIndex, tile ->
+                            if (rowIndex == x && colIndex == y)
+                                tile.copy(isFlagged = !tile.isFlagged)
+                            else
+                                tile
+                        }
                     }
-                }
-            } else {
+                    if (CheckWin(grid, sizeOfArena, countOfMines)) {
+                        statusMessage = "Поздравляю, вы победили!"
+                        winFlag = true
+                        coroutineScope.launch {
+                            SaveResultGame(context, "Победа", sizeOfArena, countOfMines)
+                        }
+                    }
+                } else {
 //                Раскомментировать, чтобы добавить индивидуальное поведение по открытию ячеек при первом нажатии
 //                if (firstMove) {
 //                    if (grid[x][y].isMine) {
@@ -219,19 +224,22 @@ fun GamePage() {
 //                        statusMessage = "Так держать!"
 //                    }
 //                } else {
-                if (grid[x][y].isMine && !grid[x][y].isFlagged) {
-                    statusMessage = "О нет, ты попал на мину!"
-                    grid = ExposeAllMines(grid)
-                    coroutineScope.launch {
-                        SaveResultGame(context, "Проиграл", sizeOfArena, countOfMines)
-                    }
-                } else {
-                    if (!grid[x][y].isFlagged) {
-                        grid = UncoverCells(grid, x, y)
-                        if (CheckWin(grid, sizeOfArena, countOfMines)) {
-                            statusMessage = "Поздравляю, вы победили!"
-                            coroutineScope.launch {
-                                SaveResultGame(context, "Победа", sizeOfArena, countOfMines)
+                    if (grid[x][y].isMine && !grid[x][y].isFlagged) {
+                        statusMessage = "О нет, ты попал на мину!"
+                        grid = ExposeAllMines(grid)
+                        loseFlag = true
+                        coroutineScope.launch {
+                            SaveResultGame(context, "Проиграл", sizeOfArena, countOfMines)
+                        }
+                    } else {
+                        if (!grid[x][y].isFlagged) {
+                            grid = UncoverCells(grid, x, y)
+                            if (CheckWin(grid, sizeOfArena, countOfMines)) {
+                                statusMessage = "Поздравляю, вы победили!"
+                                winFlag = true
+                                coroutineScope.launch {
+                                    SaveResultGame(context, "Победа", sizeOfArena, countOfMines)
+                                }
                             }
                         }
                     }
@@ -255,6 +263,8 @@ fun GamePage() {
                 }
                 grid = СreateMinefield(sizeOfArena, countOfMines)
                 firstMove = true
+                winFlag = false
+                loseFlag = false
                 statusMessage = "Начни играть!"
             },
             colors = ButtonDefaults.buttonColors(
