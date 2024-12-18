@@ -120,7 +120,7 @@ fun SettingsPage(onBackClicked: () -> Unit) {
 
                 SettingSwitch(
                     name = "Устанавливать флаги по умолчанию",
-                    description = "Если режим установки флагов по умолчанию ключен, то при заходе в игру он будет включен автоматически",
+                    description = "Если режим установки флагов по умолчанию включен, то при заходе в игру он будет включен автоматически",
                     currentMode = flaggingModeSettingValue,
                     onCheckedChange = {
                         flaggingModeSettingValue.value = it
