@@ -73,7 +73,7 @@ fun UncoverCells(grid: List<List<Title>>, x: Int, y: Int): List<List<Title>> {
 //        Раскомментировать, чтобы добавить поведение по открытию ячеек
 //    else {
 //        val directions = listOf(
-//            -1 to 1, -1 to 0, -1 to 1,
+//            -1 to -1, -1 to 0, -1 to 1,
 //            0 to -1, 0 to 1,
 //            1 to -1, 1 to 0, 1 to 1
 //        )
@@ -93,7 +93,7 @@ fun UncoverCells(grid: List<List<Title>>, x: Int, y: Int): List<List<Title>> {
 
 fun RecursiveUncoverEmptyCells(grid: MutableList<MutableList<Title>>, x: Int, y: Int) {
     val directions = listOf(
-        -1 to 1, -1 to 0, -1 to 1,
+        -1 to -1, -1 to 0, -1 to 1,
         0 to -1, 0 to 1,
         1 to -1, 1 to 0, 1 to 1
     )
